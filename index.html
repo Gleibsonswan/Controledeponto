@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Controle de Horas</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #00923F;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .login-box {
+      background-color: #ffffff;
+      padding: 40px 30px 50px 30px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 320px;
+      min-height: 430px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    .logo {
+      width: 100px;
+      height: auto;
+      margin-bottom: 20px;
+      margin-top: 10px;
+    }
+
+    select, input[type="password"], button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #00923F;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #007a34;
+    }
+
+    @media (max-width: 500px) {
+      .login-box {
+        padding: 20px;
+      }
+
+      select, input[type="password"], button {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <img src="logo-pontes.png" alt="Logo Pontes Pecuária" class="logo">
+    
+    <form onsubmit="return fazerLogin()">
+      <select id="usuario" required>
+        <option value="">Selecione o usuário</option>
+        <option value="Bruno Leandro">Bruno Leandro</option>
+        <option value="Cinthia Paiva">Cinthia Paiva</option>
+        <option value="Cleiton Soares">Cleiton Soares</option>
+        <option value="Eunica Tavares">Eunica Tavares</option>
+        <option value="Jane Camelia">Jane Camelia</option>
+        <option value="Luiz Hermes">Luiz Hermes</option>
+        <option value="Sandryelle Laize">Sandryelle Laize</option>
+        <option value="Wilma Dias">Wilma Dias</option>
+        <option value="Administrador">Administrador</option>
+      </select>
+
+      <input type="password" id="senha" placeholder="Senha" required>
+
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
+
+  <script>
+    const usuarios = {
+      "Bruno Leandro": "0102",
+      "Cinthia Paiva": "2122",
+      "Cleiton Soares": "3134",
+      "Eunica Tavares": "2222",
+      "Jane Camelia": "3005",
+      "Luiz Hermes": "2905",
+      "Sandryelle Laize": "0404",
+      "Wilma Dias": "1122",
+      "Administrador": "1999"
+    };
+
+    function fazerLogin() {
+      const usuario = document.getElementById('usuario').value;
+      const senha = document.getElementById('senha').value;
+
+      if (usuarios[usuario] === senha) {
+        localStorage.setItem('usuarioLogado', usuario);
+        window.location.href = 'ponto.html';
+        return false;
+      } else {
+        alert("Usuário ou senha incorretos!");
+        return false;
+      }
+    }
+  </script>
+
+</body>
+</html>
