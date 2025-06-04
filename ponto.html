@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Controle de Ponto</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #00923F;
+      padding: 20px;
+      color: #333;
+      position: relative;
+    }
+
+    .sair-card {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      cursor: pointer;
+      font-weight: bold;
+      color: #00923F;
+      border: none;
+    }
+
+    .container {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 1100px;
+      width: 100%;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+
+    h2 {
+      color: #00923F;
+      margin: 5px 0;
+    }
+
+    h2.titulo-principal {
+      font-size: 29px;
+      color: #000;
+    }
+
+    select, input[type="time"], input[type="text"] {
+      padding: 6px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      display: block;
+      overflow-x: auto;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    td input[type="text"], td select {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    th {
+      background-color: #00923F;
+      color: white;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+      flex-direction: row;
+    }
+
+    .header-logo img {
+      width: 80px;
+      height: auto;
+    }
+
+    #relogio {
+      font-size: 15px;
+      color: #555;
+      margin-top: 8px;
+    }
+
+    .saldos {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-left: auto;
+    }
+
+    .card-saldo {
+      background-color: #f9f9f9;
+      border-left: 5px solid #00923F;
+      padding: 10px 15px;
+      border-radius: 6px;
+      min-width: 200px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-size: 14px;
+    }
+
+    .card-editar {
+      background-color: #d4edda;
+      border-left: 5px solid #28a745;
+    }
+
+    .card-action {
+      background-color: #ffffff;
+      border: 2px solid #00923F;
+      color: #00923F;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: background-color 0.2s, color 0.2s;
+    }
+
+    .card-action:hover {
+      background-color: #00923F;
+      color: white;
+    }
+
+    .footer-buttons {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .status-abonado {
+      background-color: #cce5ff !important;
+    }
+
+    .status-nao-abonado {
+      background-color: #f8d7da !important;
+    }
+
+    @media (max-width: 768px) {
+      .header-logo img {
+        width: 60px;
+      }
+
+      h2 {
+        font-size: 16px;
+      }
+
+      .card-saldo {
+        min-width: 150px;
+      }
+
+      .footer-buttons {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      th, td {
+        font-size: 10px;
+        padding: 6px;
+      }
+
+      select, input[type="time"], input[type="text"] {
+        font-size: 12px;
+        padding: 5px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="sair-card" onclick="sair()">Sair</button>
+
+  <div class="container" id="relatorioPDF">
+    <div class="header-bar">
+      <div class="header-logo">
+        <img src="logo-pontes.png" alt="Logo Pontes Pecuária">
+        <div>
+          <h2 class="titulo-principal">Formulário de Controle interno Cia do Arame</h2>
+          <h2>Controle de Ponto - <span id="usuarioNome">Usuário</span></h2>
+          <div id="relogio"></div>
+        </div>
+      </div>
+
+      <div class="saldos">
+        <div class="card-saldo">
+          <strong>Saldo Anterior:</strong>
+          <span id="saldoAnterior">00:00:00</span>
+        </div>
+        <div class="card-saldo">
+          <strong>Saldo do Período:</strong>
+          <span id="saldoAtual">00:00:00</span>
+        </div>
+        <div class="card-saldo">
+          <strong>Saldo Atual:</strong>
+          <span id="saldoReal">00:00:00</span>
+        </div>
+        <div class="card-saldo card-editar">
+          <strong>Editar Saldo Anterior:</strong><br>
+          <div id="editarSaldoAnteriorWrapper">
+            <span id="valorSaldoAnteriorTexto">00:00:00</span>
+            <button onclick="mostrarCampoEdicaoSaldo()" style="margin-left: 10px;">Editar</button>
+          </div>
+          <div id="campoEdicaoSaldo" style="display:none; margin-top: 5px;">
+            <input type="text" id="inputSaldoAnterior" placeholder="hh:mm:ss" style="width: 100px;" />
+            <button onclick="salvarSaldoAnterior()">Salvar</button>
+            <button onclick="cancelarEdicaoSaldo()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+      <label for="mes">Selecione o mês:</label>
+      <select id="mes" onchange="gerarTabela()"></select>
+    </div>
+
+    <table id="tabelaPonto">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Dia da Semana</th>
+          <th>Entrada</th>
+          <th>Intervalo</th>
+          <th>Saída</th>
+          <th>Horas Trabalhadas</th>
+          <th>Horas Extras</th>
+          <th>Horas Devedoras</th>
+          <th>Saldo</th>
+          <th>Status</th>
+          <th>Observação</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="footer-buttons">
+      <button class="card-action" onclick="finalizarMes()">Finalizar Mês</button>
+      <button class="card-action" onclick="window.print()">Imprimir Relatório</button>
+    </div>
+  </div>
+<script>
+  const usuarioLogado = localStorage.getItem('usuarioLogado') || "Usuário";
+  document.getElementById('usuarioNome').textContent = usuarioLogado;
+
+  const hoje = new Date();
+  const anoAtual = hoje.getFullYear();
+  let saldoAnteriorHoras = 0;
+  const selectMes = document.getElementById('mes');
+  const tabelaBody = document.querySelector('#tabelaPonto tbody');
+  let dadosSalvos = JSON.parse(localStorage.getItem(`pontoMes_${usuarioLogado}`) || '{}');
+
+  const valorLocal = localStorage.getItem('saldoAnterior');
+  if (valorLocal && valorLocal.includes(":")) {
+    saldoAnteriorHoras = converterHoraParaDecimal(valorLocal);
+  }
+
+  const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  meses.forEach((mes, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = mes;
+    if (i === hoje.getMonth()) opt.selected = true;
+    selectMes.appendChild(opt);
+  });
+  function atualizarRelogio() {
+    const agora = new Date();
+    const diaSemana = agora.toLocaleDateString('pt-BR', { weekday: 'long' });
+    const data = agora.toLocaleDateString('pt-BR');
+    const hora = agora.toLocaleTimeString('pt-BR');
+    document.getElementById('relogio').textContent = `${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}, ${data} - ${hora}`;
+  }
+
+  setInterval(atualizarRelogio, 1000);
+  atualizarRelogio();
+  function gerarTabela() {
+    tabelaBody.innerHTML = '';
+    const mesSelecionado = parseInt(selectMes.value);
+    const diasNoMes = new Date(anoAtual, mesSelecionado + 1, 0).getDate();
+    const chaveMes = `${anoAtual}-${mesSelecionado}`;
+    const dadosMes = dadosSalvos[chaveMes] || {};
+
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+      const data = new Date(anoAtual, mesSelecionado, dia);
+      const dataStr = data.toLocaleDateString('pt-BR');
+      const diaSemana = data.toLocaleDateString('pt-BR', { weekday: 'long' });
+
+      const entradaVal = dadosMes[dataStr]?.entrada || '';
+      const saidaVal = dadosMes[dataStr]?.saida || '';
+      const obsVal = dadosMes[dataStr]?.obs || '';
+      const statusVal = dadosMes[dataStr]?.status || 'selecionar';
+
+      const linha = document.createElement('tr');
+      linha.innerHTML = `
+        <td>${dataStr}</td>
+        <td class="dia-semana">${diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1)}</td>
+        <td><input type="time" value="${entradaVal}" onchange="salvarECalcular(this)" /></td>
+        <td>12:00 - 13:00</td>
+        <td><input type="time" value="${saidaVal}" onchange="salvarECalcular(this)" /></td>
+        <td class="horas-trabalhadas"></td>
+        <td class="horas-extras"></td>
+        <td class="horas-devedoras"></td>
+        <td class="saldo"></td>
+        <td>
+          <select onchange="aplicarStatusNaLinha(this)">
+            <option value="selecionar">Selecione</option>
+            <option value="abonado" ${statusVal === 'abonado' ? 'selected' : ''}>Abonado</option>
+            <option value="nao-abonado" ${statusVal === 'nao-abonado' ? 'selected' : ''}>Não Abonado</option>
+            <option value="abonar-entrada" ${statusVal === 'abonar-entrada' ? 'selected' : ''}>Abonar Entrada</option>
+            <option value="abonar-saida" ${statusVal === 'abonar-saida' ? 'selected' : ''}>Abonar Saída</option>
+          </select>
+        </td>
+        <td><input type="text" value="${obsVal}" oninput="salvarObservacao(this)" /></td>
+      `;
+      tabelaBody.appendChild(linha);
+
+      if (entradaVal && saidaVal) calcularLinha(linha.querySelector('input'));
+      if (statusVal !== 'selecionar') aplicarStatusNaLinha(linha.querySelector('select'));
+    }
+
+    somarHorasDeTodasAsLinhas();
+  }
+
+  function salvarECalcular(input) {
+    calcularLinha(input);
+    salvarDadosDoDia(input.closest('tr'));
+    somarHorasDeTodasAsLinhas();
+  }
+
+  function salvarObservacao(input) {
+    salvarDadosDoDia(input.closest('tr'));
+    somarHorasDeTodasAsLinhas();
+  }
+
+  function aplicarStatusNaLinha(select) {
+  const linha = select.closest('tr');
+  const status = select.value;
+  const diaSemana = linha.querySelector('.dia-semana').textContent.trim();
+  const tdHoras = linha.querySelector('.horas-trabalhadas');
+  const tdExtras = linha.querySelector('.horas-extras');
+  const tdDevedoras = linha.querySelector('.horas-devedoras');
+  const tdSaldo = linha.querySelector('.saldo');
+
+  const entrada = linha.querySelectorAll('input[type="time"]')[0].value;
+  const saida = linha.querySelectorAll('input[type="time"]')[1].value;
+
+  linha.classList.remove("status-abonado", "status-nao-abonado");
+
+  // Recuperar saldo original, se existir
+  if (!linha.dataset.saldoOriginal && tdSaldo.textContent) {
+    linha.dataset.saldoOriginal = tdSaldo.textContent;
+  }
+
+  if (status === "abonado") {
+    linha.classList.add("status-abonado");
+    tdDevedoras.textContent = "-";
+    tdSaldo.textContent = "00:00:00";
+  } else if (status === "nao-abonado" && diaSemana !== "Sábado" && diaSemana !== "Domingo") {
+    linha.classList.add("status-nao-abonado");
+    tdHoras.textContent = "00:00:00";
+    tdExtras.textContent = "-";
+    tdDevedoras.textContent = "08:48:00";
+    tdSaldo.textContent = "-08:48:00";
+  } else if (status === "abonar-entrada" || status === "abonar-saida") {
+    linha.classList.add("status-abonado");
+    calcularLinha(linha.querySelector('input'));
+  } else if (status === "selecionar") {
+    // Restaurar saldo original (se houver)
+    if (linha.dataset.saldoOriginal) {
+      tdSaldo.textContent = linha.dataset.saldoOriginal;
+    }
+
+    // Esconder campos se entrada/saida vazias
+    if (!entrada && !saida) {
+      tdHoras.textContent = "";
+      tdExtras.textContent = "";
+      tdDevedoras.textContent = "";
+      tdSaldo.textContent = "";
+    } else {
+      calcularLinha(linha.querySelector('input'));
+    }
+  }
+
+  salvarDadosDoDia(linha);
+  somarHorasDeTodasAsLinhas();
+}
+
+  function salvarDadosDoDia(linha) {
+    const data = linha.children[0].textContent;
+    const entrada = linha.querySelectorAll('input[type="time"]')[0].value;
+    const saida = linha.querySelectorAll('input[type="time"]')[1].value;
+    const obs = linha.querySelector('input[type="text"]').value;
+    const status = linha.querySelector('select')?.value || 'selecionar';
+    const chaveMes = `${anoAtual}-${selectMes.value}`;
+
+    if (!dadosSalvos[chaveMes]) dadosSalvos[chaveMes] = {};
+    dadosSalvos[chaveMes][data] = { entrada, saida, obs, status };
+    localStorage.setItem(`pontoMes_${usuarioLogado}`, JSON.stringify(dadosSalvos));
+  }
+
+  function calcularLinha(input) {
+    const linha = input.closest('tr');
+    const entradaInput = linha.querySelectorAll('input[type="time"]')[0];
+    const saidaInput = linha.querySelectorAll('input[type="time"]')[1];
+    const status = linha.querySelector('select')?.value || 'selecionar';
+    const diaSemana = linha.querySelector('.dia-semana').textContent.trim();
+    const tdHoras = linha.querySelector('.horas-trabalhadas');
+    const tdExtras = linha.querySelector('.horas-extras');
+    const tdDevedoras = linha.querySelector('.horas-devedoras');
+    const tdSaldo = linha.querySelector('.saldo');
+
+    if (!entradaInput.value || !saidaInput.value) {
+  tdHoras.textContent = "";
+  tdExtras.textContent = "";
+  tdDevedoras.textContent = "";
+  tdSaldo.textContent = "";
+  return;
+}
+
+    let entrada = entradaInput.value;
+    let saida = saidaInput.value;
+
+    if (status === "abonar-entrada") entrada = "08:00";
+    if (status === "abonar-saida") saida = "17:48";
+
+    const hEntrada = ajustarEntrada(entrada);
+    const hSaida = ajustarSaida(saida);
+
+    let horasTrabalhadas = hSaida - hEntrada;
+    if (hEntrada < 13 && hSaida > 12) {
+      horasTrabalhadas -= 1;
+    }
+
+    horasTrabalhadas = Math.max(0, horasTrabalhadas);
+    const esperado = 8.8;
+    const diferenca = horasTrabalhadas - esperado;
+
+    tdHoras.textContent = formatarDecimalParaHora(horasTrabalhadas);
+
+    if (diaSemana === "Sábado" || diaSemana === "Domingo") {
+      tdExtras.textContent = formatarDecimalParaHora(horasTrabalhadas);
+      tdDevedoras.textContent = "-";
+      tdSaldo.textContent = formatarDecimalParaHora(horasTrabalhadas);
+    } else {
+      tdExtras.textContent = diferenca > 0 ? formatarDecimalParaHora(diferenca) : "-";
+      tdDevedoras.textContent = diferenca < 0 ? formatarDecimalParaHora(Math.abs(diferenca)) : "-";
+      tdSaldo.textContent = diferenca > 0 ? formatarDecimalParaHora(diferenca) : diferenca < 0 ? `-${formatarDecimalParaHora(Math.abs(diferenca))}` : "00:00:00";
+    }
+  }
+
+  function ajustarEntrada(horario) {
+    const [h, m] = horario.split(':').map(Number);
+    if (h === 8 && m >= 1 && m <= 10) return 8.0;
+    return h + m / 60;
+  }
+
+  function ajustarSaida(horario) {
+    const [h, m] = horario.split(':').map(Number);
+    if (h === 17 && m >= 38 && m <= 47) return 17 + 48 / 60;
+    return h + m / 60;
+  }
+
+  function formatarDecimalParaHora(decimal) {
+    if (isNaN(decimal)) return "00:00:00";
+    const negativo = decimal < 0;
+    decimal = Math.abs(decimal);
+    let horas = Math.floor(decimal);
+    let minutosDec = (decimal - horas) * 60;
+    let minutos = Math.floor(minutosDec);
+    let segundos = Math.round((minutosDec - minutos) * 60);
+
+    if (segundos === 60) { segundos = 0; minutos += 1; }
+    if (minutos === 60) { minutos = 0; horas += 1; }
+
+    const horaStr = `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(segundos).padStart(2, '0')}`;
+    return negativo ? `-${horaStr}` : horaStr;
+  }
+
+  function converterHoraParaDecimal(horaStr) {
+    if (!horaStr || !horaStr.includes(":")) return 0;
+    const negativo = horaStr.startsWith("-");
+    const partes = horaStr.replace("-", "").split(':').map(n => Number(n) || 0);
+    const decimal = partes[0] + partes[1] / 60 + partes[2] / 3600;
+    return negativo ? -decimal : decimal;
+  }
+
+  function somarHorasDeTodasAsLinhas() {
+    let totalExtras = 0;
+    let totalDevedoras = 0;
+
+    document.querySelectorAll('tr').forEach(linha => {
+      const tdExtras = linha.querySelector('.horas-extras');
+      const tdDevedoras = linha.querySelector('.horas-devedoras');
+
+      if (tdExtras && tdExtras.textContent.trim() !== '-' && tdExtras.textContent.trim()) {
+        totalExtras += converterHoraParaDecimal(tdExtras.textContent.trim());
+      }
+
+      if (tdDevedoras && tdDevedoras.textContent.trim() !== '-' && tdDevedoras.textContent.trim()) {
+        totalDevedoras += converterHoraParaDecimal(tdDevedoras.textContent.trim());
+      }
+    });
+
+    const saldoAtualDecimal = totalExtras - totalDevedoras;
+    const saldoRealDecimal = saldoAnteriorHoras + saldoAtualDecimal;
+
+    document.getElementById('saldoAnterior').textContent = formatarDecimalParaHora(saldoAnteriorHoras);
+    document.getElementById('saldoAtual').textContent = (saldoAtualDecimal < 0 ? "-" : "") + formatarDecimalParaHora(Math.abs(saldoAtualDecimal));
+    document.getElementById('saldoReal').textContent = (saldoRealDecimal < 0 ? "-" : "") + formatarDecimalParaHora(Math.abs(saldoRealDecimal));
+    document.getElementById('valorSaldoAnteriorTexto').textContent = formatarDecimalParaHora(saldoAnteriorHoras);
+  }
+
+  function finalizarMes() {
+    const saldoRealText = document.getElementById('saldoReal').textContent;
+    const mesSelecionado = selectMes.value;
+    const chaveMes = `${anoAtual}-${mesSelecionado}`;
+
+    const historico = {
+      usuario: usuarioLogado,
+      mes: selectMes.options[selectMes.selectedIndex].text,
+      ano: anoAtual,
+      dados: dadosSalvos[chaveMes] || {},
+      saldoFinal: saldoRealText,
+      dataExportacao: new Date().toLocaleString('pt-BR')
+    };
+
+    const historicoTotal = JSON.parse(localStorage.getItem(`historicoPontos_${usuarioLogado}`) || '[]');
+    historicoTotal.push(historico);
+    localStorage.setItem(`historicoPontos_${usuarioLogado}`, JSON.stringify(historicoTotal));
+
+    localStorage.setItem('saldoAnterior', saldoRealText);
+    saldoAnteriorHoras = converterHoraParaDecimal(saldoRealText);
+
+    delete dadosSalvos[chaveMes];
+    localStorage.setItem(`pontoMes_${usuarioLogado}`, JSON.stringify(dadosSalvos));
+
+    gerarTabela();
+    somarHorasDeTodasAsLinhas();
+    alert("Mês finalizado. Relatório zerado e saldo transferido.");
+  }
+
+  function sair() {
+    localStorage.removeItem('usuarioLogado');
+    window.location.href = 'index.html';
+  }
+
+  function mostrarCampoEdicaoSaldo() {
+    document.getElementById('campoEdicaoSaldo').style.display = 'block';
+    document.getElementById('editarSaldoAnteriorWrapper').style.display = 'none';
+    document.getElementById('inputSaldoAnterior').value = document.getElementById('valorSaldoAnteriorTexto').textContent;
+  }
+
+  function cancelarEdicaoSaldo() {
+    document.getElementById('campoEdicaoSaldo').style.display = 'none';
+    document.getElementById('editarSaldoAnteriorWrapper').style.display = 'block';
+  }
+
+  function salvarSaldoAnterior() {
+    const novoValor = document.getElementById('inputSaldoAnterior').value;
+    if (!/^-?\d{2}:\d{2}:\d{2}$/.test(novoValor)) {
+      alert('Formato inválido. Use hh:mm:ss ou -hh:mm:ss.');
+      return;
+    }
+    localStorage.setItem('saldoAnterior', novoValor);
+    saldoAnteriorHoras = converterHoraParaDecimal(novoValor);
+    document.getElementById('valorSaldoAnteriorTexto').textContent = novoValor;
+    document.getElementById('campoEdicaoSaldo').style.display = 'none';
+    document.getElementById('editarSaldoAnteriorWrapper').style.display = 'block';
+    somarHorasDeTodasAsLinhas();
+  }
+
+  gerarTabela();
+</script>
+</body>
+</html>
